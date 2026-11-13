@@ -31,6 +31,7 @@
                 <option value="Electronics">ইলেকট্রনিক্স</option>
                 <option value="Fashion">ফ্যাশন</option>
                 <option value="Books">বই</option>
+                <option value="Educational materials">শিক্ষা সামগ্রী</option>
                 <option value="Others">অন্যান্য</option>
             </select>
         </div>
@@ -69,6 +70,7 @@
                             <option value="Electronics">ইলেকট্রনিক্স</option>
                             <option value="Fashion">ফ্যাশন</option>
                             <option value="Books">বই</option>
+                            <option value="Educational materials">শিক্ষা সামগ্রী</option>
                             <option value="Others">অন্যান্য</option>
                         </select>
                     </div>
@@ -170,7 +172,7 @@
             const enteredPin = prompt("প্রোডাক্টটি ডিলিট করতে গোপন পিন দিন (ডেমো পিন: 1234):");
             if (enteredPin === null) return;
 
-            if (enteredPin === product.pin || enteredPin === "admin123") {
+            if (enteredPin === product.pin || enteredPin === "nakul01") {
                 products = products.filter(p => p.id !== id);
                 localStorage.setItem('myShopProducts', JSON.stringify(products));
                 renderProducts();
