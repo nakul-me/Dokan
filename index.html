@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>আমার অনলাইন মার্কেটপ্লেস</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Hind Siliguri', sans-serif; }
+    </style>
+</head>
+<body class="bg-gray-100">
+
+    <!-- নেভিগেশন বার -->
+    <nav class="bg-indigo-600 text-white p-4 shadow-lg sticky top-0 z-50">
+        <div class="container mx-auto flex justify-between items-center">
+            <h1 class="text-2xl font-bold">🛒 আমাদের মার্কেটপ্লেস</h1>
+            <button onclick="openAddModal()" class="bg-white text-indigo-600 px-4 py-2 rounded-lg font-semibold hover:bg-indigo-50 transition">
+                + প্রোডাক্ট যোগ করুন
+            </button>
+        </div>
+    </nav>
+
+    <!-- প্রোডাক্ট লিস্ট সেকশন -->
+    <main class="container mx-auto py-8 px-4">
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-xl font-bold text-gray-800">সকল প্রোডাক্টসমূহ</h2>
+            <select id="categoryFilter" onchange="renderProducts()" class="border p-2 rounded-lg bg-white">
+                <option value="All">সব ক্যাটাগরি</option>
+                <option value="Electronics">ইলেকট্রনিক্স</option>
+                <option value="Fashion">ফ্যাশন</option>
+                <option value="Books">বই</option>
+                <option value="Others">অন্যান্য</option>
+            </select>
+        </div>
+
+        <!-- প্রোডাক্ট কার্ড গ্রিড -->
+        <div id="productGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            <!-- জাভাস্ক্রিপ্ট দিয়ে প্রোডাক্ট এখানে লোড হবে -->
+        </div>
+    </main>
+
+    <!-- প্রোডাক্ট যোগ ও এডিট করার পপ-আপ ফর্ম (Modal) -->
+    <div id="productModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-xl max-w-md w-full p-6 shadow-2xl max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center border-b pb-3 mb-4">
+                <h3 id="modalTitle" class="text-xl font-bold">নতুন প্রোডাক্টের তথ্য দিন</h3>
+                <button onclick="closeModal()" class="text-gray-500 hover:text-black text-2xl">&times;</button>
+            </div>
+            
+            <form id="productForm" class="space-y-4">
+                <!-- এডিট করার সময় প্রোডাক্টের ID ধরে রাখার জন্য গোপন ফিল্ড -->
+                <input type="hidden" id="editProductId">
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">প্রোডাক্টের নাম *</label>
+                    <input type="text" id="pName" required placeholder="যেমন: স্মার্ট ওয়াচ" class="w-full border p-2 rounded-lg mt-1">
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">দাম (টাকায়) *</label>
+                        <input type="number" id="pPrice" required placeholder="১৫০০" class="w-full border p-2 rounded-lg mt-1">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">ক্যাটাগরি</label>
+                        <select id="pCategory" class="w-full border p-2 rounded-lg mt-1">
+                            <option value="Electronics">ইলেকট্রনিক্স</option>
+                            <option value="Fashion">ফ্যাশন</option>
+                            <option value="Books">বই</option>
+                            <option value="Others">অন্যান্য</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">প্রোডাক্টের ছবি <span id="imageHint" class="text-xs text-gray-500">*</span></label>
+                    <input type="file" id="pImage" accept="image/*" required class="w-full border p-1.5 rounded-lg mt-1 text-sm">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">বিস্তারিত তথ্য ও যোগাযোগের নম্বর *</label>
+                    <textarea id="pDesc" required rows="2" placeholder="প্রোডাক্টের বিবরণ এবং আপনার ফোন নম্বর দিন..." class="w-full border p-2 rounded-lg mt-1"></textarea>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-red-600">গোপন পিন (এডিট/ডিলিট করার জন্য) *</label>
+                    <input type="password" id="pPin" required placeholder="যেমন: 1234" class="w-full border border-red-300 p-2 rounded-lg mt-1">
+                </div>
+
+                <button type="submit" id="submitBtn" class="w-full bg-indigo-600 text-white py-2.5 rounded-lg font-bold hover:bg-indigo-700 transition">
+                    পোস্ট করুন
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        let products = JSON.parse(localStorage.getItem('myShopProducts')) || [
+            {
+                id: 1,
+                name: "ওয়্যারলেস হেডফোন",
+                price: "2200",
+                category: "Electronics",
+                image: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=500",
+                desc: "খুবই ভালো সাউন্ড কোয়ালিটি। যোগাযোগ: 01700000000",
+                pin: "1234"
+            },
+            {
+                id: 2,
+                name: "কটন পাঞ্জাবি",
+                price: "1250",
+                category: "Fashion",
+                image: "https://images.unsplash.com/photo-1597983073493-88cd35cf93b0?w=500",
+                desc: "১০০% সুতি কাপড়। সাইজ: M, L, XL। ফোন: 01800000000",
+                pin: "1234"
+            }
+        ];
+
+        // নতুন প্রোডাক্ট যোগ করার জন্য মডাল খোলা
+        function openAddModal() {
+            document.getElementById('productForm').reset();
+            document.getElementById('editProductId').value = '';
+            document.getElementById('modalTitle').innerText = 'নতুন প্রোডাক্টের তথ্য দিন';
+            document.getElementById('submitBtn').innerText = 'পোস্ট করুন';
+            document.getElementById('pImage').required = true;
+            document.getElementById('imageHint').innerText = '*';
+            document.getElementById('productModal').classList.remove('hidden');
+        }
+
+        function closeModal() {
+            document.getElementById('productModal').classList.add('hidden');
+        }
+
+        // ১. প্রোডাক্ট এডিট করার ফাংশন
+        function editProduct(id) {
+            const product = products.find(p => p.id === id);
+            if (!product) return;
+
+            const enteredPin = prompt("পোস্টটি এডিট করতে গোপন পিন দিন (ডেমো পিন: 1234):");
+            if (enteredPin === null) return;
+
+            if (enteredPin === product.pin || enteredPin === "admin123") {
+                // ফর্মের ভেতর আগের তথ্যগুলো বসিয়ে দেওয়া
+                document.getElementById('editProductId').value = product.id;
+                document.getElementById('pName').value = product.name;
+                document.getElementById('pPrice').value = product.price;
+                document.getElementById('pCategory').value = product.category;
+                document.getElementById('pDesc').value = product.desc;
+                document.getElementById('pPin').value = product.pin;
+
+                // এডিট করার সময় ছবি বদলানো বাধ্যতামূলক নয়
+                document.getElementById('pImage').required = false;
+                document.getElementById('imageHint').innerText = '(পরিবর্তন করতে চাইলে নতুন ছবি দিন)';
+                
+                document.getElementById('modalTitle').innerText = 'প্রোডাক্টের তথ্য এডিট করুন';
+                document.getElementById('submitBtn').innerText = 'আপডেট করুন';
+                document.getElementById('productModal').classList.remove('hidden');
+            } else {
+                alert("ভুল পিন! এডিট করার অনুমতি নেই।");
+            }
+        }
+
+        // প্রোডাক্ট ডিলিট করার ফাংশন
+        function deleteProduct(id) {
+            const product = products.find(p => p.id === id);
+            if (!product) return;
+
+            const enteredPin = prompt("প্রোডাক্টটি ডিলিট করতে গোপন পিন দিন (ডেমো পিন: 1234):");
+            if (enteredPin === null) return;
+
+            if (enteredPin === product.pin || enteredPin === "admin123") {
+                products = products.filter(p => p.id !== id);
+                localStorage.setItem('myShopProducts', JSON.stringify(products));
+                renderProducts();
+                alert("প্রোডাক্টটি সফলভাবে ডিলিট করা হয়েছে!");
+            } else {
+                alert("ভুল পিন! প্রোডাক্টটি ডিলিট করা সম্ভব হয়নি।");
+            }
+        }
+
+        // প্রোডাক্ট স্ক্রিনে দেখানো
+        function renderProducts() {
+            const grid = document.getElementById('productGrid');
+            const filter = document.getElementById('categoryFilter').value;
+            grid.innerHTML = '';
+
+            const filtered = filter === 'All' ? products : products.filter(p => p.category === filter);
+
+            if (filtered.length === 0) {
+                grid.innerHTML = '<p class="text-gray-500 col-span-full text-center py-10">কোনো প্রোডাক্ট পাওয়া যায়নি।</p>';
+                return;
+            }
+
+            filtered.forEach(product => {
+                const card = `
+                    <div class="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition flex flex-col relative">
+                        <!-- এডিট এবং ডিলিট বাটন -->
+                        <div class="absolute top-2 right-2 flex gap-2">
+                            <button onclick="editProduct(${product.id})" title="এডিট করুন" class="bg-amber-500 text-white w-8 h-8 rounded-full flex items-center justify-center shadow hover:bg-amber-600 transition">
+                                ✏️
+                            </button>
+                            <button onclick="deleteProduct(${product.id})" title="ডিলিট করুন" class="bg-red-500 text-white w-8 h-8 rounded-full flex items-center justify-center shadow hover:bg-red-600 transition">
+                                🗑️
+                            </button>
+                        </div>
+
+                        <img src="${product.image}" alt="${product.name}" class="h-48 w-full object-cover">
+                        <div class="p-4 flex-grow flex flex-col justify-between">
+                            <div>
+                                <span class="text-xs bg-indigo-100 text-indigo-700 px-2 py-1 rounded-full font-semibold">${product.category}</span>
+                                <h3 class="text-lg font-bold text-gray-800 mt-2">${product.name}</h3>
+                                <p class="text-gray-600 text-sm mt-1">${product.desc}</p>
+                            </div>
+                            <div class="mt-4 pt-3 border-t flex justify-between items-center">
+                                <span class="text-xl font-bold text-indigo-600">৳ ${product.price}</span>
+                                <button onclick="alert('বিক্রেতার সাথে যোগাযোগের তথ্য:\\n${product.desc}')" class="bg-green-500 text-white px-3 py-1.5 rounded-lg text-sm font-semibold hover:bg-green-600">
+                                    কিনুন
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                grid.innerHTML += card;
+            });
+        }
+
+        // ২. ফর্ম সাবমিট (নতুন পোস্ট এবং এডিট আপডেট উভয় কাজ করবে)
+        document.getElementById('productForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const editId = document.getElementById('editProductId').value;
+            const name = document.getElementById('pName').value;
+            const price = document.getElementById('pPrice').value;
+            const category = document.getElementById('pCategory').value;
+            const desc = document.getElementById('pDesc').value;
+            const pin = document.getElementById('pPin').value;
+            const imageFile = document.getElementById('pImage').files[0];
+
+            // ডাটা সেভ করার কমন ফাংশন
+            const saveProductData = (imageUrl) => {
+                if (editId) {
+                    // বিদ্যমান প্রোডাক্ট আপডেট করা
+                    const index = products.findIndex(p => p.id == editId);
+                    if (index !== -1) {
+                        products[index] = {
+                            ...products[index],
+                            name,
+                            price,
+                            category,
+                            image: imageUrl || products[index].image, // নতুন ছবি না দিলে আগের ছবিই থাকবে
+                            desc,
+                            pin
+                        };
+                    }
+                } else {
+                    // নতুন প্রোডাক্ট তৈরি করা
+                    const newProduct = {
+                        id: Date.now(),
+                        name,
+                        price,
+                        category,
+                        image: imageUrl,
+                        desc,
+                        pin
+                    };
+                    products.unshift(newProduct);
+                }
+
+                localStorage.setItem('myShopProducts', JSON.stringify(products));
+                renderProducts();
+                closeModal();
+                document.getElementById('productForm').reset();
+            };
+
+            // যদি ইউজার নতুন ছবি সিলেক্ট করে তবে সেটি রিড করবে, নাহলে সরাসরি সেভ করবে
+            if (imageFile) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    saveProductData(event.target.result);
+                };
+                reader.readAsDataURL(imageFile);
+            } else {
+                saveProductData(null);
+            }
+        });
+
+        renderProducts();
+    </script>
+</body>
+</html>
