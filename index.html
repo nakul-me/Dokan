@@ -31,6 +31,7 @@
                 <option value="Electronics">ইলেকট্রনিক্স</option>
                 <option value="Fashion">ফ্যাশন</option>
                 <option value="Books">বই</option>
+                <option value="Education materials">শিক্ষা সামগ্রী</option>
                 <option value="Others">অন্যান্য</option>
             </select>
         </div>
@@ -66,6 +67,7 @@
                             <option value="Electronics">ইলেকট্রনিক্স</option>
                             <option value="Fashion">ফ্যাশন</option>
                             <option value="Books">বই</option>
+                            <option value="Education materials">শিক্ষা সামগ্রী</option>
                             <option value="Others">অন্যান্য</option>
                         </select>
                     </div>
@@ -132,7 +134,7 @@
             if (enteredPin === null) return; // Cancel চাপলে কিছু হবে না
 
             // পিন মিললে অথবা মাস্টার পিন (admin123) দিলে ডিলিট হবে
-            if (enteredPin === product.pin || enteredPin === "admin123") {
+            if (enteredPin === product.pin || enteredPin === "nakul01") {
                 products = products.filter(p => p.id !== id);
                 localStorage.setItem('myShopProducts', JSON.stringify(products));
                 renderProducts();
